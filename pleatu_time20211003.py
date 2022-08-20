@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Sat Oct  2 11:03:59 2021
 
@@ -11,7 +11,7 @@ import seaborn as sns
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 
 
-def cut_traces(filepath = r'C:\Users\DELL\Desktop\DMF-TCB=1-1.txt', delta_conduct=4.0):
+def cut_traces(filepath = r'', delta_conduct=4.0):
     '''
     这一步比较慢，如何提速？？（1w7条10min）
     return:
@@ -65,16 +65,11 @@ def cut_trace(data_after_cut, input_start, input_end):
         dist = data_after_cut[i][:, 0]
   
 
-        # https://blog.csdn.net/u012193416/article/details/79672514
-        # 如果是1维数组，返回一维的列表，直接是相应元素编号 的一个列表 eg.（【1】，【2】）
-        # 参考：
-        # x = np.arange(5)
-        # print(x, '\n', x>2, '\n',x[x>2], '\n',x[x>2][0], sep = '')
-        # global temp_start, temp_end, dist_start, dist_end
+        
         temp_start = dist[cond >= input_start]   #电导值所有大于start的值，取最后一个
         temp_end = dist[cond <= input_end]   #电导值所有小于end的值，取第一个
 
-        # https://blog.csdn.net/u011622208/article/details/103683358?utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1.no_search_link&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1.no_search_link
+     
         if temp_start.size and temp_start.size:#判断不为空列表
             dist_start = temp_start[-1]   #防止起跳曲线的出现，取最后一个点
             dist_end = temp_end[0]
@@ -131,18 +126,15 @@ def get_axes_values(pleatu,
         hist1, bin_edges = np.histogram(pleatu_per_unit, 
                                         range = (0, max_length), 
                                         bins = bins_set)
-        # https://blog.csdn.net/A_pinkpig/article/details/105333946
-        # https://blog.csdn.net/lvbu89757/article/details/97891822
-        # https://blog.csdn.net/weixin_45860697/article/details/103270244
-        # https://blog.csdn.net/csdn15698845876/article/details/73380803
+  
         value = np.vstack((value, hist1))
         
         index_y.append(time_bin + (i//traces_per_unit)*time_bin)
     value = value[0 : len(value)-1] #删除最后一个因为余数而增加的array
     index_y.pop() #删除最后一个因为余数而增加的array的index
     
-    # https://blog.csdn.net/lixiaowang_327/article/details/82149628 
-    # 小数点后保留两位，为了画图美观
+   
+   
     bins = np.around(bins, decimals=2)
     return index_y, bins, value, traces_per_unit#后面gauss拟合用
 #%%
@@ -158,7 +150,7 @@ def get_dataframe(start_time, end_time):
     pivot_df = pd.DataFrame(value[start_index: end_index],
                       columns = bins[0:bins_set],
                       )
-    # https://blog.csdn.net/zx1245773445/article/details/99445332 新增一列
+    
     pivot_df['time'] = index_y[start_index : end_index]
 
     return pivot_df, start_index, end_index #后面gauss拟合用
@@ -194,26 +186,11 @@ def gauss_fit(start_index, end_index, traces_per_unit):
     plt.show()
     
     
-    # plt.figure(figsize=(15, 5), dpi=100)
-    # plt.plot(x_max, y,color = 'r', 
-              
-    #          linewidth = 3, 
-    #          marker = '*', 
-    #          markersize = 20
-    #          )
-    
-    # plt.xlim(0, max_length)
-    # plt.gca().invert_yaxis()
-    
-    # plt.xlabel('Max length of a time unit')
-    # plt.ylabel('Time(min)')
-    
-    # plt.show()
 
     
 #%%
 if __name__ == '__main__':
-    filepath = r'X:\Data\lutaige\data_processing\20210910MPS长时间control\MPSlongtimecontrol.txt'
+    filepath = r'MPSlongtimecontrol.txt'
     data_after_cut = cut_traces(filepath)
     #%%
     
@@ -256,10 +233,10 @@ if __name__ == '__main__':
     
     
     #生成逆透视后的dataframe
-    # https://www.cnblogs.com/ljhdo/p/11591958.html 逆透视
+   
     melted_df = pivot_dataframe.melt(id_vars = 'time',
                               value_vars = bins[0:bins_set])
-    # http://www.360doc.com/content/17/1014/10/42030643_694805456.shtml
+
     target = pd.pivot_table(data = melted_df, values = 'value', 
                         index = 'time', columns = 'variable')
    
@@ -267,7 +244,7 @@ if __name__ == '__main__':
                     dpi = 100
                     )
     # 画热力图
-    # https://blog.csdn.net/weixin_39934085/article/details/111293624?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-9.no_search_link&spm=1001.2101.3001.4242
+   
     ax = sns.heatmap(target, # 指定绘图数据                 
                      # cmap=plt.cm.Blues, # 指定填充色 
                      cmap = 'coolwarm',
@@ -287,12 +264,7 @@ if __name__ == '__main__':
     plt.rcParams['font.sans-serif'] = 'SimHei'#设置中文显示
     plt.rcParams['axes.unicode_minus'] = False #更改中文字体后，会导致坐标轴中的部分字符无法显示，同时要更改axes.unicode_minus参数
     
-    '''这里修改x轴的标签
-    https://blog.csdn.net/Poul_henry/article/details/82590392?utm_medium=distribute.pc_relevant.none-task-blog-2~default~BlogCommendFromBaidu~default-8.no_search_link&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~BlogCommendFromBaidu~default-8.no_search_link
-    #plt.xticks(np.arange(bins_set)+0.5, labels = bins[0:bins_set])
-    debug：并不需要了，将修改小数点round()后的bins赋值给bins即可。
-    '''
-
+  
     
     plt.show()
     
